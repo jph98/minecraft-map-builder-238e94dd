@@ -123,16 +123,16 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.lineTo(0, bounds.maxZ);
     ctx.stroke();
 
-    // Draw axis labels in Minecraft font style
+    // Draw axis labels in Minecraft font style (larger)
     ctx.fillStyle = '#1A1A1A'; // Dark text like Minecraft UI
-    ctx.font = 'bold 12px monospace'; // Monospace font for pixelated look
+    ctx.font = 'bold 16px monospace'; // Increased from 12px to 16px
     ctx.textAlign = 'center';
     
     // X-axis labels
     const labelStep = majorGridSize; // Label every 64 units
     for (let x = Math.ceil(bounds.minX / labelStep) * labelStep; x <= bounds.maxX; x += labelStep) {
       if (x !== 0) {
-        ctx.fillText(x.toString(), x, -8);
+        ctx.fillText(x.toString(), x, -12);
       }
     }
     
@@ -140,21 +140,21 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.textAlign = 'right';
     for (let z = Math.ceil(bounds.minZ / labelStep) * labelStep; z <= bounds.maxZ; z += labelStep) {
       if (z !== 0) {
-        ctx.fillText(z.toString(), -8, z + 4);
+        ctx.fillText(z.toString(), -12, z + 6);
       }
     }
     
     // Origin label
     ctx.textAlign = 'right';
-    ctx.fillText('0', -8, -8);
+    ctx.fillText('0', -12, -12);
 
-    // Draw coordinates as Minecraft-style blocks
+    // Draw coordinates as Minecraft-style blocks (larger)
     map.coordinates.forEach(coord => {
       const isSelected = selectedCoordinate?.id === coord.id;
       const color = coord.color || getCoordinateColor(coord.y);
       
-      // Draw block-style coordinate point
-      const blockSize = isSelected ? 12 : 8;
+      // Draw block-style coordinate point (increased sizes)
+      const blockSize = isSelected ? 18 : 14; // Increased from 12:8 to 18:14
       
       // Main block
       ctx.fillStyle = color;
@@ -162,7 +162,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       
       // Block outline (Minecraft block style)
       ctx.strokeStyle = isSelected ? '#FFD700' : '#000'; // Gold for selected
-      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.lineWidth = isSelected ? 3 : 2; // Increased outline width
       ctx.strokeRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize, blockSize);
       
       // Add highlight effect for 3D block look
@@ -171,33 +171,33 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         ctx.fillRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize/2, blockSize/2);
       }
 
-      // Draw label with Minecraft-style background
-      ctx.font = 'bold 11px monospace';
+      // Draw label with Minecraft-style background (larger fonts)
+      ctx.font = 'bold 14px monospace'; // Increased from 11px to 14px
       ctx.textAlign = 'center';
       
       // Text background (like Minecraft name tags)
       const textMetrics = ctx.measureText(coord.label);
-      const textWidth = textMetrics.width + 6;
-      const textHeight = 14;
+      const textWidth = textMetrics.width + 8; // Increased padding
+      const textHeight = 18; // Increased height
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(coord.x - textWidth/2, coord.z - 25, textWidth, textHeight);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; // Darker background for better contrast
+      ctx.fillRect(coord.x - textWidth/2, coord.z - 32, textWidth, textHeight);
       
       // Text
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(coord.label, coord.x, coord.z - 16);
+      ctx.fillText(coord.label, coord.x, coord.z - 19);
       
-      // Draw coordinates in smaller text
-      ctx.font = 'bold 9px monospace';
+      // Draw coordinates in smaller text (but still larger than before)
+      ctx.font = 'bold 12px monospace'; // Increased from 9px to 12px
       const coordText = `(${coord.x}, ${coord.y}, ${coord.z})`;
       const coordMetrics = ctx.measureText(coordText);
-      const coordWidth = coordMetrics.width + 4;
+      const coordWidth = coordMetrics.width + 6; // Increased padding
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(coord.x - coordWidth/2, coord.z + 15, coordWidth, 12);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(coord.x - coordWidth/2, coord.z + 20, coordWidth, 16); // Increased height
       
       ctx.fillStyle = '#CCCCCC';
-      ctx.fillText(coordText, coord.x, coord.z + 24);
+      ctx.fillText(coordText, coord.x, coord.z + 32);
     });
 
     ctx.restore();
@@ -235,13 +235,13 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const worldX = (clickX - canvas.width / 2 - offset.x) / scale;
     const worldZ = (clickY - canvas.height / 2 - offset.y) / scale;
 
-    // Find closest coordinate
+    // Find closest coordinate (increased detection radius)
     let closestCoord: Coordinate | null = null;
     let minDistance = Infinity;
 
     map.coordinates.forEach(coord => {
       const distance = Math.sqrt((coord.x - worldX) ** 2 + (coord.z - worldZ) ** 2);
-      if (distance < 20 && distance < minDistance) {
+      if (distance < 25 && distance < minDistance) { // Increased from 20 to 25
         minDistance = distance;
         closestCoord = coord;
       }
