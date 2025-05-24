@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Coordinate } from '@/types/map';
-import { Upload, FileText } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BulkCoordinateImportProps {
@@ -62,19 +62,19 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full">
-          <Upload className="w-4 h-4 mr-2" />
-          Bulk Import
+          <Plus className="w-4 h-4 mr-2" />
+          Multi Add Coordinates
         </Button>
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Bulk Import Coordinates
+            <Plus className="w-5 h-5" />
+            Multi Add Coordinates
           </DialogTitle>
           <DialogDescription>
-            Enter coordinates in the format: x, y, z, label (one per line)
+            Enter multiple coordinates in the format: x, y, z, label (one per line)
           </DialogDescription>
         </DialogHeader>
         
@@ -104,7 +104,7 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
             Cancel
           </Button>
           <Button type="button" onClick={handleImport}>
-            Import Coordinates
+            Add Coordinates
           </Button>
         </DialogFooter>
       </DialogContent>
