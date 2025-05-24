@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { MinecraftMap, Coordinate } from '@/types/map';
 import { MapCanvas } from '@/components/MapCanvas';
 import { MapCard } from '@/components/MapCard';
 import { MapManager } from '@/components/MapManager';
 import { CoordinateForm } from '@/components/CoordinateForm';
+import { BulkCoordinateImport } from '@/components/BulkCoordinateImport';
+import { FullScreenMap } from '@/components/FullScreenMap';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,7 @@ const Index = () => {
   const [maps, setMaps] = useState<MinecraftMap[]>([]);
   const [selectedMap, setSelectedMap] = useState<MinecraftMap | null>(null);
   const [selectedCoordinate, setSelectedCoordinate] = useState<Coordinate | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -64,6 +66,24 @@ const Index = () => {
     toast.success(`Coordinate "${newCoordinate.label}" added!`);
   };
 
+  const handleBulkImportCoordinates = (coordinatesData: Omit<Coordinate, 'id'>[]) => {
+    if (!selectedMap) return;
+
+    const newCoordinates: Coordinate[] = coordinatesData.map(coord => ({
+      ...coord,
+      id: generateId(),
+    }));
+
+    const updatedMap = {
+      ...selectedMap,
+      coordinates: [...selectedMap.coordinates, ...newCoordinates],
+      updatedAt: new Date(),
+    };
+
+    setMaps(prev => prev.map(m => m.id === selectedMap.id ? updatedMap : m));
+    setSelectedMap(updatedMap);
+  };
+
   const handleDeleteCoordinate = (coordinateId: string) => {
     if (!selectedMap) return;
 
@@ -78,6 +98,14 @@ const Index = () => {
     setSelectedMap(updatedMap);
     setSelectedCoordinate(null);
     toast.success(`Coordinate "${coordToDelete?.label}" deleted!`);
+  };
+
+  const handleFullScreen = () => {
+    setIsFullScreen(true);
+  };
+
+  const handleCloseFullScreen = () => {
+    setIsFullScreen(false);
   };
 
   return (
@@ -118,7 +146,10 @@ const Index = () => {
 
             {/* Add Coordinate Form */}
             {selectedMap && (
-              <CoordinateForm onAddCoordinate={handleAddCoordinate} />
+              <div className="space-y-4">
+                <CoordinateForm onAddCoordinate={handleAddCoordinate} />
+                <BulkCoordinateImport onImportCoordinates={handleBulkImportCoordinates} />
+              </div>
             )}
           </div>
 
@@ -146,7 +177,7 @@ const Index = () => {
                   <CardHeader>
                     <CardTitle>Map View</CardTitle>
                     <CardDescription>
-                      Click and drag to pan • Use zoom controls • Click coordinates for details
+                      Click and drag to pan • Use zoom controls • Click coordinates for details • Full screen available
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -154,6 +185,7 @@ const Index = () => {
                       map={selectedMap}
                       selectedCoordinate={selectedCoordinate}
                       onCoordinateSelect={setSelectedCoordinate}
+                      onFullScreen={handleFullScreen}
                     />
                   </CardContent>
                 </Card>
@@ -246,6 +278,16 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Full Screen Map */}
+      {isFullScreen && selectedMap && (
+        <FullScreenMap
+          map={selectedMap}
+          selectedCoordinate={selectedCoordinate}
+          onCoordinateSelect={setSelectedCoordinate}
+          onClose={handleCloseFullScreen}
+        />
+      )}
     </div>
   );
 };

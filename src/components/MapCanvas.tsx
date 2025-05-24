@@ -1,19 +1,22 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Coordinate, MinecraftMap, ViewBounds } from '@/types/map';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2 } from 'lucide-react';
 
 interface MapCanvasProps {
   map: MinecraftMap;
   selectedCoordinate?: Coordinate | null;
   onCoordinateSelect: (coordinate: Coordinate | null) => void;
+  onFullScreen?: () => void;
+  isFullScreen?: boolean;
 }
 
 export const MapCanvas: React.FC<MapCanvasProps> = ({
   map,
   selectedCoordinate,
   onCoordinateSelect,
+  onFullScreen,
+  isFullScreen = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scale, setScale] = useState(1);
@@ -206,7 +209,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   }, []);
 
   return (
-    <div className="relative w-full h-96 bg-amber-50 border-2 border-amber-200 rounded-lg overflow-hidden">
+    <div className={`relative w-full ${isFullScreen ? 'h-full' : 'h-96'} bg-amber-50 border-2 border-amber-200 rounded-lg overflow-hidden`}>
       <canvas
         ref={canvasRef}
         className="cursor-move"
@@ -227,6 +230,11 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         <Button size="sm" variant="outline" onClick={resetView}>
           <RotateCcw className="w-4 h-4" />
         </Button>
+        {!isFullScreen && onFullScreen && (
+          <Button size="sm" variant="outline" onClick={onFullScreen}>
+            <Maximize2 className="w-4 h-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
