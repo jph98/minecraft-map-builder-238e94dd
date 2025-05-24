@@ -7,7 +7,7 @@ import { MapCard } from '@/components/MapCard';
 import { MapManager } from '@/components/MapManager';
 import { MapEditDialog } from '@/components/MapEditDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Map } from 'lucide-react';
+import { Pickaxe, Map } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,10 +29,10 @@ const Index = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Map className="w-8 h-8 text-gray-600" />
+            <Pickaxe className="w-8 h-8 text-gray-600" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Map Builder
+            Minecraft Map Builder
           </h1>
           <p className="text-lg text-gray-600">
             Create and manage 2D maps with coordinate tracking
