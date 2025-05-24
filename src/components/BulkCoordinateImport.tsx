@@ -25,10 +25,10 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
       const parts = line.split(',').map(part => part.trim());
       
       if (parts.length >= 4) {
-        const x = parseInt(parts[0]);
-        const y = parseInt(parts[1]);
-        const z = parseInt(parts[2]);
-        const label = parts.slice(3).join(',').trim();
+        const label = parts[0].trim();
+        const x = parseInt(parts[1]);
+        const y = parseInt(parts[2]);
+        const z = parseInt(parts[3]);
         
         if (!isNaN(x) && !isNaN(y) && !isNaN(z) && label) {
           coordinates.push({ x, y, z, label });
@@ -48,7 +48,7 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
     const coordinates = parseCoordinates(textInput);
     
     if (coordinates.length === 0) {
-      toast.error('No valid coordinates found. Format: x, y, z, label (one per line)');
+      toast.error('No valid coordinates found. Format: label, x, y, z (one per line)');
       return;
     }
 
@@ -74,7 +74,7 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
             Multi Add Coordinates
           </DialogTitle>
           <DialogDescription>
-            Enter multiple coordinates in the format: x, y, z, label (one per line)
+            Enter multiple coordinates in the format: label, x, y, z (one per line)
           </DialogDescription>
         </DialogHeader>
         
@@ -85,17 +85,17 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
               id="coordinates"
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="100, 64, 200, Home Base&#10;-50, 70, 150, Mine Entrance&#10;0, 80, 0, Spawn Point"
+              placeholder="Home Base, 100, 64, 200&#10;Mine Entrance, -50, 70, 150&#10;Spawn Point, 0, 80, 0"
               rows={8}
               className="font-mono text-sm"
             />
           </div>
           
           <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded">
-            <strong>Format:</strong> x, y, z, label<br />
+            <strong>Format:</strong> label, x, y, z<br />
             <strong>Example:</strong><br />
-            100, 64, 200, Home Base<br />
-            -50, 70, 150, Mine Entrance
+            Home Base, 100, 64, 200<br />
+            Mine Entrance, -50, 70, 150
           </div>
         </div>
         
