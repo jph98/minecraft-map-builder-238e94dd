@@ -4,25 +4,26 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MinecraftMap } from '@/types/map';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 
 interface MapCardProps {
   map: MinecraftMap;
   onSelect: (map: MinecraftMap) => void;
   onDelete: (mapId: string) => void;
+  onEdit: (map: MinecraftMap) => void;
   isSelected: boolean;
 }
 
-export const MapCard: React.FC<MapCardProps> = ({ map, onSelect, onDelete, isSelected }) => {
+export const MapCard: React.FC<MapCardProps> = ({ map, onSelect, onDelete, onEdit, isSelected }) => {
   return (
     <Card className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-amber-500 bg-amber-50' : ''}`}>
       <CardHeader className="pb-3" onClick={() => onSelect(map)}>
         <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardTitle className="text-lg">{map.name}</CardTitle>
-            <CardDescription className="mt-1">{map.description}</CardDescription>
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg truncate">{map.name}</CardTitle>
+            <CardDescription className="mt-1 line-clamp-2">{map.description}</CardDescription>
           </div>
-          <Badge variant="secondary">
+          <Badge variant="secondary" className="ml-2 shrink-0">
             {map.coordinates.length} coords
           </Badge>
         </div>
@@ -34,7 +35,19 @@ export const MapCard: React.FC<MapCardProps> = ({ map, onSelect, onDelete, isSel
         </div>
       </CardContent>
       
-      <CardFooter className="pt-3 border-t">
+      <CardFooter className="pt-3 border-t flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(map);
+          }}
+          className="flex-1"
+        >
+          <Edit className="w-4 h-4 mr-1" />
+          Edit
+        </Button>
         <Button
           variant="destructive"
           size="sm"
@@ -42,7 +55,6 @@ export const MapCard: React.FC<MapCardProps> = ({ map, onSelect, onDelete, isSel
             e.stopPropagation();
             onDelete(map.id);
           }}
-          className="ml-auto"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
