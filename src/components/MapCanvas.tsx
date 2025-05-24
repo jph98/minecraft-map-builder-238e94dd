@@ -48,6 +48,30 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     };
   };
 
+  // Calculate dynamic label interval based on zoom level
+  const calculateLabelInterval = (bounds: ViewBounds, canvasWidth: number): number => {
+    const worldWidth = bounds.maxX - bounds.minX;
+    const pixelsPerUnit = (canvasWidth * scale) / worldWidth;
+    
+    // Minimum spacing between labels in pixels
+    const minLabelSpacing = 80;
+    
+    // Calculate how many world units we need between labels
+    const minWorldSpacing = minLabelSpacing / pixelsPerUnit;
+    
+    // Round up to nice intervals (powers of 2 or 5)
+    const intervals = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+    
+    for (const interval of intervals) {
+      if (interval >= minWorldSpacing) {
+        return interval;
+      }
+    }
+    
+    // Fallback for very large scales
+    return Math.ceil(minWorldSpacing / 1000) * 1000;
+  };
+
   const drawCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -128,22 +152,24 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const baseCoordFontSize = Math.max(10, 12 / scale);
     const baseAxisLabelFontSize = Math.max(14, 16 / scale);
 
-    // Draw axis labels in Minecraft font style with dynamic sizing
+    // Calculate dynamic label interval to prevent overlap
+    const labelInterval = calculateLabelInterval(bounds, canvasWidth);
+
+    // Draw axis labels in Minecraft font style with dynamic sizing and intervals
     ctx.fillStyle = '#1A1A1A'; // Dark text like Minecraft UI
     ctx.font = `bold ${baseAxisLabelFontSize}px monospace`;
     ctx.textAlign = 'center';
     
-    // X-axis labels
-    const labelStep = majorGridSize; // Label every 64 units
-    for (let x = Math.ceil(bounds.minX / labelStep) * labelStep; x <= bounds.maxX; x += labelStep) {
+    // X-axis labels with dynamic interval
+    for (let x = Math.ceil(bounds.minX / labelInterval) * labelInterval; x <= bounds.maxX; x += labelInterval) {
       if (x !== 0) {
         ctx.fillText(x.toString(), x, -12 / scale);
       }
     }
     
-    // Z-axis labels
+    // Z-axis labels with dynamic interval
     ctx.textAlign = 'right';
-    for (let z = Math.ceil(bounds.minZ / labelStep) * labelStep; z <= bounds.maxZ; z += labelStep) {
+    for (let z = Math.ceil(bounds.minZ / labelInterval) * labelInterval; z <= bounds.maxZ; z += labelInterval) {
       if (z !== 0) {
         ctx.fillText(z.toString(), -12 / scale, z + 6 / scale);
       }
