@@ -103,7 +103,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     for (let z = Math.floor(bounds.minZ / majorGridSize) * majorGridSize; z <= bounds.maxZ; z += majorGridSize) {
       ctx.beginPath();
       ctx.moveTo(bounds.minX, z);
-      ctx.lineTo(bounds.maxX, z);
+      ctx.lineTo(bounds.maxZ, z);
       ctx.stroke();
     }
 
@@ -123,16 +123,21 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.lineTo(0, bounds.maxZ);
     ctx.stroke();
 
-    // Draw axis labels in Minecraft font style (larger)
+    // Calculate dynamic font sizes based on zoom level
+    const baseLabelFontSize = Math.max(12, 16 / scale);
+    const baseCoordFontSize = Math.max(10, 12 / scale);
+    const baseAxisLabelFontSize = Math.max(14, 16 / scale);
+
+    // Draw axis labels in Minecraft font style with dynamic sizing
     ctx.fillStyle = '#1A1A1A'; // Dark text like Minecraft UI
-    ctx.font = 'bold 16px monospace'; // Increased from 12px to 16px
+    ctx.font = `bold ${baseAxisLabelFontSize}px monospace`;
     ctx.textAlign = 'center';
     
     // X-axis labels
     const labelStep = majorGridSize; // Label every 64 units
     for (let x = Math.ceil(bounds.minX / labelStep) * labelStep; x <= bounds.maxX; x += labelStep) {
       if (x !== 0) {
-        ctx.fillText(x.toString(), x, -12);
+        ctx.fillText(x.toString(), x, -12 / scale);
       }
     }
     
@@ -140,21 +145,21 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.textAlign = 'right';
     for (let z = Math.ceil(bounds.minZ / labelStep) * labelStep; z <= bounds.maxZ; z += labelStep) {
       if (z !== 0) {
-        ctx.fillText(z.toString(), -12, z + 6);
+        ctx.fillText(z.toString(), -12 / scale, z + 6 / scale);
       }
     }
     
     // Origin label
     ctx.textAlign = 'right';
-    ctx.fillText('0', -12, -12);
+    ctx.fillText('0', -12 / scale, -12 / scale);
 
-    // Draw coordinates as Minecraft-style blocks (larger)
+    // Draw coordinates as Minecraft-style blocks with dynamic text sizing
     map.coordinates.forEach(coord => {
       const isSelected = selectedCoordinate?.id === coord.id;
       const color = coord.color || getCoordinateColor(coord.y);
       
-      // Draw block-style coordinate point (increased sizes)
-      const blockSize = isSelected ? 18 : 14; // Increased from 12:8 to 18:14
+      // Draw block-style coordinate point (sizes remain the same for visibility)
+      const blockSize = isSelected ? 18 : 14;
       
       // Main block
       ctx.fillStyle = color;
@@ -162,7 +167,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       
       // Block outline (Minecraft block style)
       ctx.strokeStyle = isSelected ? '#FFD700' : '#000'; // Gold for selected
-      ctx.lineWidth = isSelected ? 3 : 2; // Increased outline width
+      ctx.lineWidth = isSelected ? 3 : 2;
       ctx.strokeRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize, blockSize);
       
       // Add highlight effect for 3D block look
@@ -171,33 +176,33 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         ctx.fillRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize/2, blockSize/2);
       }
 
-      // Draw label with Minecraft-style background (larger fonts)
-      ctx.font = 'bold 14px monospace'; // Increased from 11px to 14px
+      // Draw label with Minecraft-style background using dynamic font sizing
+      ctx.font = `bold ${baseLabelFontSize}px monospace`;
       ctx.textAlign = 'center';
       
-      // Text background (like Minecraft name tags)
+      // Text background (like Minecraft name tags) with dynamic sizing
       const textMetrics = ctx.measureText(coord.label);
-      const textWidth = textMetrics.width + 8; // Increased padding
-      const textHeight = 18; // Increased height
+      const textWidth = textMetrics.width + 8 / scale;
+      const textHeight = 18 / scale;
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; // Darker background for better contrast
-      ctx.fillRect(coord.x - textWidth/2, coord.z - 32, textWidth, textHeight);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+      ctx.fillRect(coord.x - textWidth/2, coord.z - 32 / scale, textWidth, textHeight);
       
       // Text
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(coord.label, coord.x, coord.z - 19);
+      ctx.fillText(coord.label, coord.x, coord.z - 19 / scale);
       
-      // Draw coordinates in smaller text (but still larger than before)
-      ctx.font = 'bold 12px monospace'; // Increased from 9px to 12px
+      // Draw coordinates in smaller text with dynamic sizing
+      ctx.font = `bold ${baseCoordFontSize}px monospace`;
       const coordText = `(${coord.x}, ${coord.y}, ${coord.z})`;
       const coordMetrics = ctx.measureText(coordText);
-      const coordWidth = coordMetrics.width + 6; // Increased padding
+      const coordWidth = coordMetrics.width + 6 / scale;
       
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(coord.x - coordWidth/2, coord.z + 20, coordWidth, 16); // Increased height
+      ctx.fillRect(coord.x - coordWidth/2, coord.z + 20 / scale, coordWidth, 16 / scale);
       
       ctx.fillStyle = '#CCCCCC';
-      ctx.fillText(coordText, coord.x, coord.z + 32);
+      ctx.fillText(coordText, coord.x, coord.z + 32 / scale);
     });
 
     ctx.restore();
