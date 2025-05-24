@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/components/AppProvider';
@@ -36,13 +35,13 @@ const Index = () => {
               <Pickaxe className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 font-serif" style={{ textShadow: '4px 4px 0px #000' }}>
+          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 font-mono" style={{ textShadow: '4px 4px 0px #000' }}>
             MINECRAFT
           </h1>
-          <h2 className="text-xl md:text-2xl font-bold text-yellow-300 drop-shadow-xl mb-2 font-serif" style={{ textShadow: '2px 2px 0px #000' }}>
+          <h2 className="text-xl md:text-2xl font-bold text-yellow-300 drop-shadow-xl mb-2 font-mono" style={{ textShadow: '2px 2px 0px #000' }}>
             MAP BUILDER
           </h2>
-          <p className="text-base md:text-lg text-white drop-shadow-lg font-serif" style={{ textShadow: '1px 1px 0px #000' }}>
+          <p className="text-base md:text-lg text-white drop-shadow-lg font-mono" style={{ textShadow: '1px 1px 0px #000' }}>
             Create and manage 2D maps with coordinate tracking
           </p>
         </div>
@@ -53,8 +52,8 @@ const Index = () => {
             <CardHeader className="bg-gradient-to-r from-stone-200 to-stone-300 border-b-4 border-stone-600">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <CardTitle className="text-2xl md:text-3xl text-stone-800 font-serif">Maps</CardTitle>
-                  <CardDescription className="text-stone-600 font-serif">
+                  <CardTitle className="text-2xl md:text-3xl text-stone-800 font-mono">Maps</CardTitle>
+                  <CardDescription className="text-stone-600 font-mono">
                     {maps.length === 0 ? 'No maps created yet. Create your first map to get started!' : `${maps.length} map${maps.length > 1 ? 's' : ''} created`}
                   </CardDescription>
                 </div>
@@ -67,8 +66,8 @@ const Index = () => {
                   <div className="w-20 h-20 bg-amber-600 border-4 border-amber-800 rounded-sm flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <Map className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-stone-800 font-serif">No Maps Yet</h3>
-                  <p className="text-stone-600 mb-4 font-serif">Create your first map to start plotting coordinates and building your Minecraft world reference.</p>
+                  <h3 className="text-xl font-bold mb-2 text-stone-800 font-mono">No Maps Yet</h3>
+                  <p className="text-stone-600 mb-4 font-mono">Create your first map to start plotting coordinates and building your Minecraft world reference.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
