@@ -25,10 +25,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   const [lastMouse, setLastMouse] = useState({ x: 0, y: 0 });
 
   const getCoordinateColor = (y: number): string => {
-    if (y < 0) return '#8B4513'; // Brown for underground
-    if (y < 64) return '#228B22'; // Green for surface
-    if (y < 128) return '#87CEEB'; // Light blue for elevated
-    return '#F5F5DC'; // Beige for sky level
+    if (y < 0) return '#654321'; // Dark brown for underground/caves
+    if (y < 64) return '#228B22'; // Forest green for surface
+    if (y < 128) return '#87CEEB'; // Sky blue for elevated
+    return '#F0F8FF'; // Alice blue for sky level
   };
 
   const calculateBounds = (): ViewBounds => {
@@ -59,36 +59,57 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    // Clear canvas with Minecraft grass-like background
+    ctx.fillStyle = '#7CB342'; // Minecraft grass green
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     // Set transform
     ctx.save();
     ctx.translate(canvasWidth / 2 + offset.x, canvasHeight / 2 + offset.y);
     ctx.scale(scale, scale);
 
-    // Draw grid
-    ctx.strokeStyle = '#D2B48C';
-    ctx.lineWidth = 0.5;
-    const gridSize = 50;
+    // Draw Minecraft-style grid (like chunk boundaries)
+    ctx.strokeStyle = '#4A7C59'; // Darker green for grid lines
+    ctx.lineWidth = 1;
+    const gridSize = 16; // Minecraft chunk size
     
-    for (let x = bounds.minX; x <= bounds.maxX; x += gridSize) {
+    // Draw minor grid (chunks)
+    for (let x = Math.floor(bounds.minX / gridSize) * gridSize; x <= bounds.maxX; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, bounds.minZ);
       ctx.lineTo(x, bounds.maxZ);
       ctx.stroke();
     }
     
-    for (let z = bounds.minZ; z <= bounds.maxZ; z += gridSize) {
+    for (let z = Math.floor(bounds.minZ / gridSize) * gridSize; z <= bounds.maxZ; z += gridSize) {
       ctx.beginPath();
       ctx.moveTo(bounds.minX, z);
       ctx.lineTo(bounds.maxX, z);
       ctx.stroke();
     }
 
-    // Draw axes
-    ctx.strokeStyle = '#8B4513';
+    // Draw major grid (every 4 chunks = 64 blocks)
+    ctx.strokeStyle = '#2E7D32'; // Even darker green for major grid
     ctx.lineWidth = 2;
+    const majorGridSize = 64;
+    
+    for (let x = Math.floor(bounds.minX / majorGridSize) * majorGridSize; x <= bounds.maxX; x += majorGridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, bounds.minZ);
+      ctx.lineTo(x, bounds.maxZ);
+      ctx.stroke();
+    }
+    
+    for (let z = Math.floor(bounds.minZ / majorGridSize) * majorGridSize; z <= bounds.maxZ; z += majorGridSize) {
+      ctx.beginPath();
+      ctx.moveTo(bounds.minX, z);
+      ctx.lineTo(bounds.maxX, z);
+      ctx.stroke();
+    }
+
+    // Draw axes in Minecraft bedrock color
+    ctx.strokeStyle = '#2C2C2C'; // Dark gray like bedrock
+    ctx.lineWidth = 3;
     
     // X axis
     ctx.beginPath();
@@ -102,55 +123,81 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.lineTo(0, bounds.maxZ);
     ctx.stroke();
 
-    // Draw axis labels
-    ctx.fillStyle = '#654321';
-    ctx.font = '14px Arial';
+    // Draw axis labels in Minecraft font style
+    ctx.fillStyle = '#1A1A1A'; // Dark text like Minecraft UI
+    ctx.font = 'bold 12px monospace'; // Monospace font for pixelated look
     ctx.textAlign = 'center';
     
     // X-axis labels
-    const labelStep = gridSize * 2; // Label every 100 units
+    const labelStep = majorGridSize; // Label every 64 units
     for (let x = Math.ceil(bounds.minX / labelStep) * labelStep; x <= bounds.maxX; x += labelStep) {
-      if (x !== 0) { // Don't label the origin twice
-        ctx.fillText(x.toString(), x, -10);
+      if (x !== 0) {
+        ctx.fillText(x.toString(), x, -8);
       }
     }
     
     // Z-axis labels
     ctx.textAlign = 'right';
     for (let z = Math.ceil(bounds.minZ / labelStep) * labelStep; z <= bounds.maxZ; z += labelStep) {
-      if (z !== 0) { // Don't label the origin twice
-        ctx.fillText(z.toString(), -10, z + 5);
+      if (z !== 0) {
+        ctx.fillText(z.toString(), -8, z + 4);
       }
     }
     
     // Origin label
     ctx.textAlign = 'right';
-    ctx.fillText('0', -10, -10);
+    ctx.fillText('0', -8, -8);
 
-    // Draw coordinates
+    // Draw coordinates as Minecraft-style blocks
     map.coordinates.forEach(coord => {
       const isSelected = selectedCoordinate?.id === coord.id;
       const color = coord.color || getCoordinateColor(coord.y);
       
-      // Draw point
+      // Draw block-style coordinate point
+      const blockSize = isSelected ? 12 : 8;
+      
+      // Main block
       ctx.fillStyle = color;
-      ctx.strokeStyle = isSelected ? '#FFD700' : '#000';
-      ctx.lineWidth = isSelected ? 3 : 1;
+      ctx.fillRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize, blockSize);
       
-      ctx.beginPath();
-      ctx.arc(coord.x, coord.z, isSelected ? 8 : 6, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
+      // Block outline (Minecraft block style)
+      ctx.strokeStyle = isSelected ? '#FFD700' : '#000'; // Gold for selected
+      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.strokeRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize, blockSize);
+      
+      // Add highlight effect for 3D block look
+      if (!isSelected) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize/2, blockSize/2);
+      }
 
-      // Draw label
-      ctx.fillStyle = '#000';
-      ctx.font = '12px Arial';
+      // Draw label with Minecraft-style background
+      ctx.font = 'bold 11px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(coord.label, coord.x, coord.z - 15);
       
-      // Draw coordinates
-      ctx.font = '10px Arial';
-      ctx.fillText(`(${coord.x}, ${coord.y}, ${coord.z})`, coord.x, coord.z + 20);
+      // Text background (like Minecraft name tags)
+      const textMetrics = ctx.measureText(coord.label);
+      const textWidth = textMetrics.width + 6;
+      const textHeight = 14;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(coord.x - textWidth/2, coord.z - 25, textWidth, textHeight);
+      
+      // Text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(coord.label, coord.x, coord.z - 16);
+      
+      // Draw coordinates in smaller text
+      ctx.font = 'bold 9px monospace';
+      const coordText = `(${coord.x}, ${coord.y}, ${coord.z})`;
+      const coordMetrics = ctx.measureText(coordText);
+      const coordWidth = coordMetrics.width + 4;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(coord.x - coordWidth/2, coord.z + 15, coordWidth, 12);
+      
+      ctx.fillStyle = '#CCCCCC';
+      ctx.fillText(coordText, coord.x, coord.z + 24);
     });
 
     ctx.restore();
@@ -234,7 +281,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   }, []);
 
   return (
-    <div className={`relative w-full ${isFullScreen ? 'h-full' : 'h-96'} bg-amber-50 border-2 border-amber-200 rounded-lg overflow-hidden`}>
+    <div className={`relative w-full ${isFullScreen ? 'h-full' : 'h-96'} bg-green-600 border-4 border-green-800 rounded-lg overflow-hidden shadow-lg`}>
       <canvas
         ref={canvasRef}
         className="cursor-move"
@@ -246,17 +293,17 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       />
       
       <div className="absolute top-4 right-4 flex gap-2">
-        <Button size="sm" variant="outline" onClick={zoomIn}>
+        <Button size="sm" variant="outline" onClick={zoomIn} className="bg-stone-200 border-stone-400 hover:bg-stone-300">
           <ZoomIn className="w-4 h-4" />
         </Button>
-        <Button size="sm" variant="outline" onClick={zoomOut}>
+        <Button size="sm" variant="outline" onClick={zoomOut} className="bg-stone-200 border-stone-400 hover:bg-stone-300">
           <ZoomOut className="w-4 h-4" />
         </Button>
-        <Button size="sm" variant="outline" onClick={resetView}>
+        <Button size="sm" variant="outline" onClick={resetView} className="bg-stone-200 border-stone-400 hover:bg-stone-300">
           <RotateCcw className="w-4 h-4" />
         </Button>
         {!isFullScreen && onFullScreen && (
-          <Button size="sm" variant="outline" onClick={onFullScreen}>
+          <Button size="sm" variant="outline" onClick={onFullScreen} className="bg-stone-200 border-stone-400 hover:bg-stone-300">
             <Maximize2 className="w-4 h-4" />
           </Button>
         )}

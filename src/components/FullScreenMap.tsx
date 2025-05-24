@@ -41,15 +41,15 @@ export const FullScreenMap: React.FC<FullScreenMapProps> = ({
           variant="outline"
           size="sm"
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 bg-white"
+          className="absolute top-4 right-4 z-10 bg-stone-200 border-stone-400 hover:bg-stone-300"
         >
           <X className="w-4 h-4" />
         </Button>
         
-        <div className="w-full h-full bg-white rounded-lg overflow-hidden">
-          <div className="p-3 border-b bg-amber-50">
-            <h2 className="text-lg font-bold">{map.name}</h2>
-            <p className="text-sm text-gray-600">{map.description}</p>
+        <div className="w-full h-full bg-stone-100 border-4 border-stone-600 rounded-lg overflow-hidden shadow-2xl">
+          <div className="p-3 border-b-4 border-stone-600 bg-gradient-to-r from-green-400 to-green-500">
+            <h2 className="text-lg font-bold text-white drop-shadow-lg" style={{ fontFamily: 'monospace' }}>{map.name}</h2>
+            <p className="text-sm text-green-100 drop-shadow" style={{ fontFamily: 'monospace' }}>{map.description}</p>
           </div>
           
           <div className="h-[calc(100%-60px)]">
