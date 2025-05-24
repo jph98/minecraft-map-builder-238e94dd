@@ -102,6 +102,31 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.lineTo(0, bounds.maxZ);
     ctx.stroke();
 
+    // Draw axis labels
+    ctx.fillStyle = '#654321';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    
+    // X-axis labels
+    const labelStep = gridSize * 2; // Label every 100 units
+    for (let x = Math.ceil(bounds.minX / labelStep) * labelStep; x <= bounds.maxX; x += labelStep) {
+      if (x !== 0) { // Don't label the origin twice
+        ctx.fillText(x.toString(), x, -10);
+      }
+    }
+    
+    // Z-axis labels
+    ctx.textAlign = 'right';
+    for (let z = Math.ceil(bounds.minZ / labelStep) * labelStep; z <= bounds.maxZ; z += labelStep) {
+      if (z !== 0) { // Don't label the origin twice
+        ctx.fillText(z.toString(), -10, z + 5);
+      }
+    }
+    
+    // Origin label
+    ctx.textAlign = 'right';
+    ctx.fillText('0', -10, -10);
+
     // Draw coordinates
     map.coordinates.forEach(coord => {
       const isSelected = selectedCoordinate?.id === coord.id;
