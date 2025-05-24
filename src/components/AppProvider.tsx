@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 interface AppContextType {
   maps: MinecraftMap[];
-  handleCreateMap: (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>) => void;
+  handleCreateMap: (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>) => MinecraftMap;
   handleUpdateMap: (mapId: string, updates: { name: string; description: string }) => void;
   handleDeleteMap: (mapId: string) => void;
   handleAddCoordinate: (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => void;
@@ -32,7 +32,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const handleCreateMap = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>) => {
+  const handleCreateMap = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>): MinecraftMap => {
     const newMap: MinecraftMap = {
       ...mapData,
       id: generateId(),
