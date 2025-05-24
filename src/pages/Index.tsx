@@ -36,28 +36,30 @@ const Index = () => {
               <Pickaxe className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-2xl mb-3" style={{ textShadow: '4px 4px 0px #000' }}>
+          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 font-sans" style={{ textShadow: '4px 4px 0px #000' }}>
             MINECRAFT
           </h1>
-          <h2 className="text-2xl md:text-3xl font-bold text-yellow-300 drop-shadow-xl mb-2" style={{ textShadow: '2px 2px 0px #000' }}>
+          <h2 className="text-xl md:text-2xl font-bold text-yellow-300 drop-shadow-xl mb-2 font-sans" style={{ textShadow: '2px 2px 0px #000' }}>
             MAP BUILDER
           </h2>
-          <p className="text-lg md:text-xl text-white drop-shadow-lg" style={{ textShadow: '1px 1px 0px #000' }}>
+          <p className="text-base md:text-lg text-white drop-shadow-lg font-sans" style={{ textShadow: '1px 1px 0px #000' }}>
             Create and manage 2D maps with coordinate tracking
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Create Map */}
-          <MapManager onCreateMap={handleCreateMapAndNavigate} />
-
-          {/* Map List */}
+          {/* Map List with Create Button */}
           <Card className="bg-stone-100 border-4 border-stone-600 shadow-2xl">
             <CardHeader className="bg-gradient-to-r from-stone-200 to-stone-300 border-b-4 border-stone-600">
-              <CardTitle className="text-2xl md:text-3xl text-stone-800">Your Maps</CardTitle>
-              <CardDescription className="text-stone-600">
-                {maps.length === 0 ? 'No maps created yet. Create your first map to get started!' : `${maps.length} map${maps.length > 1 ? 's' : ''} created`}
-              </CardDescription>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <CardTitle className="text-2xl md:text-3xl text-stone-800 font-sans">Maps</CardTitle>
+                  <CardDescription className="text-stone-600 font-sans">
+                    {maps.length === 0 ? 'No maps created yet. Create your first map to get started!' : `${maps.length} map${maps.length > 1 ? 's' : ''} created`}
+                  </CardDescription>
+                </div>
+                <MapManager onCreateMap={handleCreateMapAndNavigate} />
+              </div>
             </CardHeader>
             <CardContent className="p-6">
               {maps.length === 0 ? (
@@ -65,8 +67,8 @@ const Index = () => {
                   <div className="w-20 h-20 bg-amber-600 border-4 border-amber-800 rounded-sm flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <Map className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-stone-800">No Maps Yet</h3>
-                  <p className="text-stone-600 mb-4">Create your first map to start plotting coordinates and building your Minecraft world reference.</p>
+                  <h3 className="text-xl font-bold mb-2 text-stone-800 font-sans">No Maps Yet</h3>
+                  <p className="text-stone-600 mb-4 font-sans">Create your first map to start plotting coordinates and building your Minecraft world reference.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

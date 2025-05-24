@@ -41,7 +41,7 @@ export const MapManager: React.FC<MapManagerProps> = ({ onCreateMap }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full">
+        <Button className="minecraft-button bg-green-600 border-green-800 text-white hover:bg-green-700">
           <Plus className="w-4 h-4 mr-2" />
           Create New Map
         </Button>
