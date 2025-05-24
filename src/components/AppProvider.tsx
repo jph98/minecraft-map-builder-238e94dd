@@ -1,5 +1,5 @@
 
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, createContext, useContext } from 'react';
 import { MinecraftMap, Coordinate } from '@/types/map';
 import { toast } from 'sonner';
 
@@ -13,11 +13,11 @@ interface AppContextType {
   handleDeleteCoordinate: (mapId: string, coordinateId: string) => void;
 }
 
-const AppContext = React.createContext<AppContextType | undefined>(undefined);
+const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const useApp = () => {
-  const context = React.useContext(AppContext);
-  if (!context) {
+  const context = useContext(AppContext);
+  if (context === undefined) {
     throw new Error('useApp must be used within AppProvider');
   }
   return context;
