@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/components/AppProvider';
@@ -6,7 +7,7 @@ import { MapCard } from '@/components/MapCard';
 import { MapManager } from '@/components/MapManager';
 import { MapEditDialog } from '@/components/MapEditDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Map, Pickaxe } from 'lucide-react';
+import { Map } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,51 +24,43 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-400 via-green-500 to-green-600 relative overflow-hidden">
-      <div className="container mx-auto px-4 py-4 md:py-8 relative z-10">
-        {/* Header with Minecraft Logo */}
-        <div className="text-center mb-6 md:mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-4 bg-amber-600 border-4 border-amber-800 rounded-sm shadow-lg">
-              <Map className="w-10 h-10 text-white" />
-            </div>
-            <div className="p-4 bg-stone-600 border-4 border-stone-800 rounded-sm shadow-lg">
-              <Pickaxe className="w-10 h-10 text-white" />
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Map className="w-8 h-8 text-gray-600" />
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 font-mono" style={{ textShadow: '4px 4px 0px #000' }}>
-            MINECRAFT
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Map Builder
           </h1>
-          <h2 className="text-xl md:text-2xl font-bold text-yellow-300 drop-shadow-xl mb-2 font-mono" style={{ textShadow: '2px 2px 0px #000' }}>
-            MAP BUILDER
-          </h2>
-          <p className="text-base md:text-lg text-white drop-shadow-lg font-mono" style={{ textShadow: '1px 1px 0px #000' }}>
+          <p className="text-lg text-gray-600">
             Create and manage 2D maps with coordinate tracking
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Map List with Create Button */}
-          <Card className="bg-stone-100 border-4 border-stone-600 shadow-2xl">
-            <CardHeader className="bg-gradient-to-r from-stone-200 to-stone-300 border-b-4 border-stone-600">
+          <Card>
+            <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <CardTitle className="text-2xl md:text-3xl text-stone-800 font-mono">Maps</CardTitle>
-                  <CardDescription className="text-stone-600 font-mono">
+                  <CardTitle className="text-2xl text-gray-900">Maps</CardTitle>
+                  <CardDescription>
                     {maps.length === 0 ? 'No maps created yet. Create your first map to get started!' : `${maps.length} map${maps.length > 1 ? 's' : ''} created`}
                   </CardDescription>
                 </div>
                 <MapManager onCreateMap={handleCreateMapAndNavigate} />
               </div>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent>
               {maps.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-amber-600 border-4 border-amber-800 rounded-sm flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <Map className="w-10 h-10 text-white" />
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Map className="w-8 h-8 text-gray-400" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-stone-800 font-mono">No Maps Yet</h3>
-                  <p className="text-stone-600 mb-4 font-mono">Create your first map to start plotting coordinates and building your Minecraft world reference.</p>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">No Maps Yet</h3>
+                  <p className="text-gray-600 mb-4">Create your first map to start plotting coordinates and building your world reference.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
