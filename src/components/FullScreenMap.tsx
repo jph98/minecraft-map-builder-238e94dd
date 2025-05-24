@@ -42,17 +42,16 @@ export const FullScreenMap: React.FC<FullScreenMapProps> = ({
           size="sm"
           onClick={onClose}
           className="absolute top-4 right-4 z-10 minecraft-button bg-red-600 border-red-800 text-white hover:bg-red-700"
-          style={{ fontFamily: 'Press Start 2P' }}
         >
           <X className="w-4 h-4" />
         </Button>
         
         <div className="w-full h-full minecraft-card bg-stone-100 border-stone-600 overflow-hidden shadow-2xl">
           <div className="p-4 border-b-4 border-stone-600 bg-gradient-to-r from-green-400 to-green-500">
-            <h2 className="text-lg font-bold text-white drop-shadow-lg" style={{ fontFamily: 'Press Start 2P', textShadow: '2px 2px 0px #000' }}>
+            <h2 className="text-lg font-bold text-white drop-shadow-lg" style={{ textShadow: '2px 2px 0px #000' }}>
               {map.name}
             </h2>
-            <p className="text-sm text-green-100 drop-shadow mt-2" style={{ fontFamily: 'Press Start 2P', textShadow: '1px 1px 0px #000' }}>
+            <p className="text-sm text-green-100 drop-shadow mt-2" style={{ textShadow: '1px 1px 0px #000' }}>
               {map.description}
             </p>
           </div>
