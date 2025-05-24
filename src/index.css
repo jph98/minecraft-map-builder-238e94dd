@@ -1,92 +1,88 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 140 40% 95%;
+    --foreground: 140 10% 10%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 140 20% 98%;
+    --card-foreground: 140 10% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 140 20% 98%;
+    --popover-foreground: 140 10% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 140 50% 25%;
+    --primary-foreground: 140 5% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 30 40% 85%;
+    --secondary-foreground: 30 10% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 140 20% 90%;
+    --muted-foreground: 140 15% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 30 40% 85%;
+    --accent-foreground: 30 10% 20%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 5% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 140 30% 80%;
+    --input: 140 30% 80%;
+    --ring: 140 50% 25%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 140 30% 95%;
+    --sidebar-foreground: 140 10% 15%;
+    --sidebar-primary: 140 50% 25%;
+    --sidebar-primary-foreground: 140 5% 95%;
+    --sidebar-accent: 140 20% 90%;
+    --sidebar-accent-foreground: 140 10% 15%;
+    --sidebar-border: 140 30% 80%;
+    --sidebar-ring: 140 50% 25%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 140 15% 8%;
+    --foreground: 140 5% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 140 15% 8%;
+    --card-foreground: 140 5% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 140 15% 8%;
+    --popover-foreground: 140 5% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 140 5% 95%;
+    --primary-foreground: 140 15% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 140 10% 15%;
+    --secondary-foreground: 140 5% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 140 10% 15%;
+    --muted-foreground: 140 20% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 140 10% 15%;
+    --accent-foreground: 140 5% 95%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 140 5% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 140 10% 15%;
+    --input: 140 10% 15%;
+    --ring: 140 20% 75%;
+    --sidebar-background: 140 15% 8%;
+    --sidebar-foreground: 140 20% 85%;
+    --sidebar-primary: 30 70% 50%;
+    --sidebar-primary-foreground: 140 5% 95%;
+    --sidebar-accent: 140 10% 12%;
+    --sidebar-accent-foreground: 140 20% 85%;
+    --sidebar-border: 140 10% 12%;
+    --sidebar-ring: 140 50% 25%;
   }
 }
 
@@ -97,5 +93,62 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Press Start 2P', monospace;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+    min-height: 100vh;
   }
+
+  /* Minecraft-style button effects */
+  .minecraft-button {
+    font-family: 'Press Start 2P', monospace;
+    border: 4px solid;
+    transition: all 0.1s ease;
+    image-rendering: pixelated;
+  }
+
+  .minecraft-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .minecraft-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  /* Minecraft block-style cards */
+  .minecraft-card {
+    border: 4px solid;
+    border-radius: 4px;
+    box-shadow: 
+      inset -4px -4px 0 rgba(0, 0, 0, 0.2),
+      inset 4px 4px 0 rgba(255, 255, 255, 0.2);
+    image-rendering: pixelated;
+  }
+
+  /* Pixelated images */
+  img {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Custom scrollbar to match Minecraft theme */
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #8B5A2B;
+  border: 2px solid #654321;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #A0522D;
+  border: 2px solid #654321;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #CD853F;
 }
