@@ -23,7 +23,6 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [lastMouse, setLastMouse] = useState({ x: 0, y: 0 });
-  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const getCoordinateColor = (y: number): string => {
     if (y < 0) return '#654321'; // Dark brown for underground/caves
@@ -308,21 +307,6 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // Clear any existing timeout
-    if (clickTimeout) {
-      clearTimeout(clickTimeout);
-      setClickTimeout(null);
-    }
-
-    // Set a timeout for single click detection
-    const timeout = setTimeout(() => {
-      // Single click - zoom out
-      setScale(prev => Math.max(prev / 1.2, 0.1));
-      setClickTimeout(null);
-    }, 300);
-
-    setClickTimeout(timeout);
-
     // Check for coordinate selection
     const bounds = calculateBounds();
     const worldWidth = bounds.maxX - bounds.minX;
@@ -355,12 +339,6 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   };
 
   const handleCanvasDoubleClick = (e: React.MouseEvent) => {
-    // Clear the single click timeout
-    if (clickTimeout) {
-      clearTimeout(clickTimeout);
-      setClickTimeout(null);
-    }
-
     // Double click - zoom in
     setScale(prev => Math.min(prev * 1.2, 5));
   };
