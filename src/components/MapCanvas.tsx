@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Coordinate, MinecraftMap, ViewBounds } from '@/types/map';
 import { Button } from '@/components/ui/button';
@@ -49,8 +50,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const rangeZ = maxZ - minZ;
     const maxRange = Math.max(rangeX, rangeZ);
     
-    // Use proportional padding (minimum 50, maximum 500)
-    const padding = Math.max(50, Math.min(500, maxRange * 0.1));
+    // Use proportional padding (minimum 200, maximum 1000) for better visibility
+    const padding = Math.max(200, Math.min(1000, maxRange * 0.2));
     
     return {
       minX: minX - padding,
@@ -66,7 +67,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const pixelsPerUnit = (canvasWidth * scale) / worldWidth;
     
     // Minimum spacing between labels in pixels
-    const minLabelSpacing = 100;
+    const minLabelSpacing = 80;
     
     // Calculate how many world units we need between labels
     const minWorldSpacing = minLabelSpacing / pixelsPerUnit;
@@ -102,21 +103,27 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     // Calculate world dimensions for proper scaling
     const worldWidth = bounds.maxX - bounds.minX;
     const worldHeight = bounds.maxZ - bounds.minZ;
+    
+    // Calculate scale to fit all coordinates in view with some padding
+    const scaleToFitX = (canvasWidth * 0.9) / worldWidth;
+    const scaleToFitZ = (canvasHeight * 0.9) / worldHeight;
+    const autoScale = Math.min(scaleToFitX, scaleToFitZ) * scale;
+    
     const worldCenterX = (bounds.minX + bounds.maxX) / 2;
     const worldCenterZ = (bounds.minZ + bounds.maxZ) / 2;
 
     // Set transform to center the world in the canvas
     ctx.save();
     ctx.translate(canvasWidth / 2 + offset.x, canvasHeight / 2 + offset.y);
-    ctx.scale(scale, scale);
+    ctx.scale(autoScale, autoScale);
     ctx.translate(-worldCenterX, -worldCenterZ);
 
     // Draw Minecraft-style grid (like chunk boundaries)
     ctx.strokeStyle = '#4A7C59';
-    ctx.lineWidth = 2 / scale; // Scale line width inversely to zoom
-    const gridSize = 16; // Minecraft chunk size
+    ctx.lineWidth = 1 / autoScale; // Scale line width inversely to zoom
+    const gridSize = 64; // Larger grid for better visibility
     
-    // Draw minor grid (chunks)
+    // Draw minor grid
     for (let x = Math.floor(bounds.minX / gridSize) * gridSize; x <= bounds.maxX; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, bounds.minZ);
@@ -131,10 +138,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       ctx.stroke();
     }
 
-    // Draw major grid (every 4 chunks = 64 blocks)
+    // Draw major grid (every 4 times the grid size)
     ctx.strokeStyle = '#2E7D32';
-    ctx.lineWidth = 3 / scale;
-    const majorGridSize = 64;
+    ctx.lineWidth = 2 / autoScale;
+    const majorGridSize = gridSize * 4;
     
     for (let x = Math.floor(bounds.minX / majorGridSize) * majorGridSize; x <= bounds.maxX; x += majorGridSize) {
       ctx.beginPath();
@@ -146,13 +153,13 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     for (let z = Math.floor(bounds.minZ / majorGridSize) * majorGridSize; z <= bounds.maxZ; z += majorGridSize) {
       ctx.beginPath();
       ctx.moveTo(bounds.minX, z);
-      ctx.lineTo(bounds.maxZ, z);
+      ctx.lineTo(bounds.maxX, z);
       ctx.stroke();
     }
 
-    // Draw axes in Minecraft bedrock color
+    // Draw axes in Minecraft bedrock color - make them more prominent
     ctx.strokeStyle = '#2C2C2C';
-    ctx.lineWidth = 4 / scale;
+    ctx.lineWidth = 3 / autoScale;
     
     // X axis
     ctx.beginPath();
@@ -167,14 +174,14 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.stroke();
 
     // Calculate dynamic font sizes based on zoom level
-    const baseLabelFontSize = Math.max(14, 18 / scale);
-    const baseCoordFontSize = Math.max(12, 14 / scale);
-    const baseAxisLabelFontSize = Math.max(16, 20 / scale);
+    const baseLabelFontSize = Math.max(12, 16 / autoScale);
+    const baseCoordFontSize = Math.max(10, 12 / autoScale);
+    const baseAxisLabelFontSize = Math.max(14, 18 / autoScale);
 
     // Calculate dynamic label interval
     const labelInterval = calculateLabelInterval(bounds, canvasWidth);
 
-    // Draw axis labels
+    // Draw axis labels with better visibility
     ctx.fillStyle = '#1A1A1A';
     ctx.font = `bold ${baseAxisLabelFontSize}px monospace`;
     ctx.textAlign = 'center';
@@ -182,7 +189,14 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     // X-axis labels
     for (let x = Math.ceil(bounds.minX / labelInterval) * labelInterval; x <= bounds.maxX; x += labelInterval) {
       if (x !== 0) {
-        ctx.fillText(x.toString(), x, -20 / scale);
+        // Background for better visibility
+        const text = x.toString();
+        const textMetrics = ctx.measureText(text);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(x - textMetrics.width/2 - 4/autoScale, -35/autoScale, textMetrics.width + 8/autoScale, 20/autoScale);
+        
+        ctx.fillStyle = '#1A1A1A';
+        ctx.fillText(text, x, -18 / autoScale);
       }
     }
     
@@ -190,13 +204,23 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.textAlign = 'right';
     for (let z = Math.ceil(bounds.minZ / labelInterval) * labelInterval; z <= bounds.maxZ; z += labelInterval) {
       if (z !== 0) {
-        ctx.fillText(z.toString(), -20 / scale, z + 8 / scale);
+        // Background for better visibility
+        const text = z.toString();
+        const textMetrics = ctx.measureText(text);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(-textMetrics.width - 25/autoScale, z - 10/autoScale, textMetrics.width + 8/autoScale, 20/autoScale);
+        
+        ctx.fillStyle = '#1A1A1A';
+        ctx.fillText(text, -18 / autoScale, z + 6 / autoScale);
       }
     }
     
     // Origin label
     ctx.textAlign = 'right';
-    ctx.fillText('0', -20 / scale, -20 / scale);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(-25/autoScale, -25/autoScale, 20/autoScale, 20/autoScale);
+    ctx.fillStyle = '#1A1A1A';
+    ctx.fillText('0', -15 / autoScale, -10 / autoScale);
 
     // Draw coordinates as Minecraft-style blocks with improved visibility
     map.coordinates.forEach(coord => {
@@ -204,8 +228,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       const color = coord.color || getCoordinateColor(coord.y);
       
       // Dynamic block size based on zoom level for better visibility
-      const baseBlockSize = Math.max(16, 24 / scale);
-      const blockSize = isSelected ? baseBlockSize * 1.3 : baseBlockSize;
+      const baseBlockSize = Math.max(20, 30 / autoScale);
+      const blockSize = isSelected ? baseBlockSize * 1.4 : baseBlockSize;
       
       // Main block
       ctx.fillStyle = color;
@@ -213,53 +237,44 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       
       // Block outline - thicker and more visible
       ctx.strokeStyle = isSelected ? '#FFD700' : '#000';
-      ctx.lineWidth = Math.max(2, 4 / scale);
+      ctx.lineWidth = Math.max(2, 3 / autoScale);
       ctx.strokeRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize, blockSize);
       
       // Add highlight effect for 3D block look
       if (!isSelected) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.fillRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize/2, blockSize/2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillRect(coord.x - blockSize/2, coord.z - blockSize/2, blockSize/3, blockSize/3);
       }
 
       // Draw label with dynamic sizing and better visibility
-      const labelFontSize = Math.max(12, baseLabelFontSize);
+      const labelFontSize = Math.max(11, baseLabelFontSize);
       ctx.font = `bold ${labelFontSize}px monospace`;
       ctx.textAlign = 'center';
       
       // Text background - more prominent
       const textMetrics = ctx.measureText(coord.label);
-      const textWidth = textMetrics.width + 16 / scale;
-      const textHeight = 24 / scale;
+      const textWidth = textMetrics.width + 12 / autoScale;
+      const textHeight = 20 / autoScale;
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-      ctx.fillRect(coord.x - textWidth/2, coord.z - (45 / scale), textWidth, textHeight);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+      ctx.fillRect(coord.x - textWidth/2, coord.z - (40 / autoScale), textWidth, textHeight);
       
-      // Text with white outline for better visibility
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 3 / scale;
-      ctx.strokeText(coord.label, coord.x, coord.z - (26 / scale));
-      
+      // Text with white color for better visibility
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(coord.label, coord.x, coord.z - (26 / scale));
+      ctx.fillText(coord.label, coord.x, coord.z - (25 / autoScale));
       
       // Draw coordinates in smaller text
-      const coordFontSize = Math.max(10, baseCoordFontSize);
+      const coordFontSize = Math.max(9, baseCoordFontSize);
       ctx.font = `bold ${coordFontSize}px monospace`;
       const coordText = `(${coord.x}, ${coord.y}, ${coord.z})`;
       const coordMetrics = ctx.measureText(coordText);
-      const coordWidth = coordMetrics.width + 12 / scale;
+      const coordWidth = coordMetrics.width + 10 / autoScale;
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-      ctx.fillRect(coord.x - coordWidth/2, coord.z + (28 / scale), coordWidth, 20 / scale);
-      
-      // Coordinate text with outline
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2 / scale;
-      ctx.strokeText(coordText, coord.x, coord.z + (42 / scale));
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+      ctx.fillRect(coord.x - coordWidth/2, coord.z + (25 / autoScale), coordWidth, 18 / autoScale);
       
       ctx.fillStyle = '#CCCCCC';
-      ctx.fillText(coordText, coord.x, coord.z + (42 / scale));
+      ctx.fillText(coordText, coord.x, coord.z + (38 / autoScale));
     });
 
     ctx.restore();
@@ -294,12 +309,18 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const clickY = e.clientY - rect.top;
 
     const bounds = calculateBounds();
+    const worldWidth = bounds.maxX - bounds.minX;
+    const worldHeight = bounds.maxZ - bounds.minZ;
+    const scaleToFitX = (canvas.width * 0.9) / worldWidth;
+    const scaleToFitZ = (canvas.height * 0.9) / worldHeight;
+    const autoScale = Math.min(scaleToFitX, scaleToFitZ) * scale;
+    
     const worldCenterX = (bounds.minX + bounds.maxX) / 2;
     const worldCenterZ = (bounds.minZ + bounds.maxZ) / 2;
 
     // Transform click coordinates to world coordinates
-    const worldX = ((clickX - canvas.width / 2 - offset.x) / scale) + worldCenterX;
-    const worldZ = ((clickY - canvas.height / 2 - offset.y) / scale) + worldCenterZ;
+    const worldX = ((clickX - canvas.width / 2 - offset.x) / autoScale) + worldCenterX;
+    const worldZ = ((clickY - canvas.height / 2 - offset.y) / autoScale) + worldCenterZ;
 
     // Find closest coordinate with increased detection radius
     let closestCoord: Coordinate | null = null;
@@ -307,7 +328,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
 
     map.coordinates.forEach(coord => {
       const distance = Math.sqrt((coord.x - worldX) ** 2 + (coord.z - worldZ) ** 2);
-      const detectionRadius = Math.max(25, 35 / scale); // Dynamic detection radius
+      const detectionRadius = Math.max(30, 40 / autoScale); // Dynamic detection radius
       if (distance < detectionRadius && distance < minDistance) {
         minDistance = distance;
         closestCoord = coord;
