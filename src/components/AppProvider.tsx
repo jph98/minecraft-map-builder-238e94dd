@@ -1,11 +1,10 @@
-
 import React, { useState, ReactNode, createContext, useContext } from 'react';
 import { MinecraftMap, Coordinate } from '@/types/map';
 import { toast } from 'sonner';
 
 interface AppContextType {
   maps: MinecraftMap[];
-  handleCreateMap: (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>) => MinecraftMap;
+  handleCreateMap: (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates?: Omit<Coordinate, 'id'>[]) => MinecraftMap;
   handleUpdateMap: (mapId: string, updates: { name: string; description: string }) => void;
   handleDeleteMap: (mapId: string) => void;
   handleAddCoordinate: (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => void;
@@ -32,17 +31,23 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const handleCreateMap = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>): MinecraftMap => {
+  const handleCreateMap = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates: Omit<Coordinate, 'id'>[] = []): MinecraftMap => {
+    const coordinates: Coordinate[] = initialCoordinates.map(coord => ({
+      ...coord,
+      id: generateId(),
+    }));
+
     const newMap: MinecraftMap = {
       ...mapData,
       id: generateId(),
-      coordinates: [],
+      coordinates,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     setMaps(prev => [...prev, newMap]);
-    toast.success(`Map "${newMap.name}" created successfully!`);
+    const coordText = coordinates.length > 0 ? ` with ${coordinates.length} coordinate${coordinates.length > 1 ? 's' : ''}` : '';
+    toast.success(`Map "${newMap.name}" created successfully${coordText}!`);
     return newMap;
   };
 

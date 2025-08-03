@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/components/AppProvider';
-import { MinecraftMap } from '@/types/map';
+import { MinecraftMap, Coordinate } from '@/types/map';
 import { MapCard } from '@/components/MapCard';
 import { MapManager } from '@/components/MapManager';
 import { MapEditDialog } from '@/components/MapEditDialog';
@@ -14,8 +13,8 @@ const Index = () => {
   const { maps, handleCreateMap, handleUpdateMap, handleDeleteMap } = useApp();
   const [editingMap, setEditingMap] = useState<MinecraftMap | null>(null);
 
-  const handleCreateMapAndNavigate = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>) => {
-    const newMap = handleCreateMap(mapData);
+  const handleCreateMapAndNavigate = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates: Omit<Coordinate, 'id'>[] = []) => {
+    const newMap = handleCreateMap(mapData, initialCoordinates);
     navigate(`/map/${newMap.id}`);
   };
 
