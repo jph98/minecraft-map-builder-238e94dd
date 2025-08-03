@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Coordinate, MinecraftMap, ViewBounds } from '@/types/map';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [lastMouse, setLastMouse] = useState({ x: 0, y: 0 });
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const getCoordinateColor = (y: number): string => {
     if (y < 0) return '#654321'; // Dark brown for underground/caves
@@ -308,6 +308,22 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
+    // Clear any existing timeout
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+    }
+
+    // Set a timeout for single click detection
+    const timeout = setTimeout(() => {
+      // Single click - zoom out
+      setScale(prev => Math.max(prev / 1.2, 0.1));
+      setClickTimeout(null);
+    }, 300);
+
+    setClickTimeout(timeout);
+
+    // Check for coordinate selection
     const bounds = calculateBounds();
     const worldWidth = bounds.maxX - bounds.minX;
     const worldHeight = bounds.maxZ - bounds.minZ;
@@ -336,6 +352,17 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     });
 
     onCoordinateSelect(closestCoord);
+  };
+
+  const handleCanvasDoubleClick = (e: React.MouseEvent) => {
+    // Clear the single click timeout
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+    }
+
+    // Double click - zoom in
+    setScale(prev => Math.min(prev * 1.2, 5));
   };
 
   const resetView = () => {
@@ -378,6 +405,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onClick={handleCanvasClick}
+        onDoubleClick={handleCanvasDoubleClick}
       />
       
       <div className="absolute top-4 right-4 flex gap-2">
