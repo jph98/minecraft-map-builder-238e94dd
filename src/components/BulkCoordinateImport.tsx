@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Coordinate } from '@/types/map';
+import { parseCoordinateLines, ParseWarning } from '@/lib/parseCoordinates';
 import { Plus, FileText, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,58 +14,12 @@ interface BulkCoordinateImportProps {
   onImportCoordinates: (coordinates: Omit<Coordinate, 'id'>[]) => void;
 }
 
-interface ParseWarning {
-  line: string;
-  issue: string;
-}
-
 export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onImportCoordinates }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [parseWarnings, setParseWarnings] = useState<ParseWarning[]>([]);
 
-  const parseCoordinates = (text: string): { coordinates: Omit<Coordinate, 'id'>[], warnings: ParseWarning[] } => {
-    const lines = text.trim().split('\n').filter(line => line.trim());
-    const coordinates: Omit<Coordinate, 'id'>[] = [];
-    const warnings: ParseWarning[] = [];
-    
-    for (const line of lines) {
-      const parts = line.split(',').map(part => part.trim());
-      
-      if (parts.length < 4) {
-        warnings.push({ line, issue: 'Missing coordinates (needs label, x, y, z)' });
-        continue;
-      }
-      
-      const label = parts[0].trim();
-      const x = parseInt(parts[1]);
-      const y = parseInt(parts[2]);
-      const z = parseInt(parts[3]);
-      
-      if (!label) {
-        warnings.push({ line, issue: 'Missing label' });
-        continue;
-      }
-      
-      if (isNaN(x) || isNaN(y) || isNaN(z)) {
-        warnings.push({ line, issue: 'Invalid coordinates (must be numbers)' });
-        continue;
-      }
-      
-      // Warn about potentially incomplete coordinates
-      if (Math.abs(z) < 10 && Math.abs(x) > 100) {
-        warnings.push({ line, issue: 'Z coordinate seems unusually small - is it complete?' });
-      }
-      
-      if (Math.abs(y) > 500) {
-        warnings.push({ line, issue: 'Y coordinate seems unusually high/low for Minecraft' });
-      }
-      
-      coordinates.push({ x, y, z, label });
-    }
-    
-    return { coordinates, warnings };
-  };
+  const parseCoordinates = parseCoordinateLines;
 
   const handleImport = () => {
     if (!textInput.trim()) {
@@ -152,7 +107,7 @@ export const BulkCoordinateImport: React.FC<BulkCoordinateImportProps> = ({ onIm
             Mine Entrance, -50, 70, 150<br />
             <br />
             <strong>Tips:</strong><br />
-            • Double-check Z coordinates aren't cut off<br />
+            • Commas are optional — spaces work too<br />
             • Y coordinates are typically 0-320 in Minecraft<br />
             • Use complete coordinate values for accuracy
           </div>
