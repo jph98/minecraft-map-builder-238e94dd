@@ -6,16 +6,19 @@ import { MapCard } from '@/components/MapCard';
 import { MapManager } from '@/components/MapManager';
 import { MapEditDialog } from '@/components/MapEditDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pickaxe, Map } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { Pickaxe, Map, LogOut, Loader2 } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { maps, handleCreateMap, handleUpdateMap, handleDeleteMap } = useApp();
+  const { maps, loading, handleCreateMap, handleUpdateMap, handleDeleteMap } = useApp();
+  const { profile, user, signOut } = useAuth();
   const [editingMap, setEditingMap] = useState<MinecraftMap | null>(null);
 
-  const handleCreateMapAndNavigate = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates: Omit<Coordinate, 'id'>[] = []) => {
-    const newMap = handleCreateMap(mapData, initialCoordinates);
-    navigate(`/map/${newMap.id}`);
+  const handleCreateMapAndNavigate = async (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates: Omit<Coordinate, 'id'>[] = []) => {
+    const newMap = await handleCreateMap(mapData, initialCoordinates);
+    if (newMap) navigate(`/map/${newMap.id}`);
   };
 
   const handleSelectMap = (map: MinecraftMap) => {
@@ -25,6 +28,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Account bar */}
+        <div className="flex justify-end items-center gap-3 mb-4">
+          <span className="text-sm text-gray-600 truncate max-w-[200px]">
+            {profile?.display_name ?? user?.email}
+          </span>
+          <Button variant="outline" size="sm" onClick={signOut}>
+            <LogOut className="w-4 h-4 mr-1" />
+            Sign out
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -53,7 +67,11 @@ const Index = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {maps.length === 0 ? (
+              {loading ? (
+                <div className="flex justify-center py-12 text-gray-500">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : maps.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Map className="w-8 h-8 text-gray-400" />
