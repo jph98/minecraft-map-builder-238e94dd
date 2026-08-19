@@ -11,17 +11,25 @@ import { FullScreenMap } from '@/components/FullScreenMap';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Loader2 } from 'lucide-react';
 
 const MapDetail = () => {
   const { mapId } = useParams<{ mapId: string }>();
   const navigate = useNavigate();
-  const { maps, handleUpdateMap, handleDeleteMap, handleAddCoordinate, handleBulkImportCoordinates, handleDeleteCoordinate } = useApp();
+  const { maps, loading, handleUpdateMap, handleDeleteMap, handleAddCoordinate, handleBulkImportCoordinates, handleDeleteCoordinate } = useApp();
   const [selectedCoordinate, setSelectedCoordinate] = useState<Coordinate | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [editingMap, setEditingMap] = useState<MinecraftMap | null>(null);
 
   const selectedMap = maps.find(m => m.id === mapId);
+
+  if (loading && !selectedMap) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+      </div>
+    );
+  }
 
   if (!selectedMap) {
     return (
