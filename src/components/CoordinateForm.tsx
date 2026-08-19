@@ -41,15 +41,15 @@ export const CoordinateForm: React.FC<CoordinateFormProps> = ({ onAddCoordinate 
 
   return (
     <Card className="w-full">
-      <CardHeader>
+      <CardHeader className="px-3 sm:px-6">
         <CardTitle className="flex items-center gap-2">
           <Plus className="w-5 h-5" />
           Add Coordinate
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 sm:px-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <div>
               <Label htmlFor="x">X</Label>
               <Input
