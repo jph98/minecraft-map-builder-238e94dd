@@ -1,10 +1,13 @@
-import React, { useState, ReactNode, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, ReactNode, createContext, useContext } from 'react';
 import { MinecraftMap, Coordinate } from '@/types/map';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AppContextType {
   maps: MinecraftMap[];
-  handleCreateMap: (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates?: Omit<Coordinate, 'id'>[]) => MinecraftMap;
+  loading: boolean;
+  handleCreateMap: (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates?: Omit<Coordinate, 'id'>[]) => Promise<MinecraftMap | null>;
   handleUpdateMap: (mapId: string, updates: { name: string; description: string }) => void;
   handleDeleteMap: (mapId: string) => void;
   handleAddCoordinate: (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => void;
@@ -27,22 +30,82 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const { user } = useAuth();
   const [maps, setMaps] = useState<MinecraftMap[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  const fetchMaps = useCallback(async () => {
+    if (!user) {
+      setMaps([]);
+      return;
+    }
+    setLoading(true);
+    const [{ data: mapRows, error: mapError }, { data: coordRows, error: coordError }] = await Promise.all([
+      supabase.from('maps').select('*').order('created_at', { ascending: true }),
+      supabase.from('coordinates').select('*').order('created_at', { ascending: true }),
+    ]);
+    setLoading(false);
 
-  const handleCreateMap = (mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>, initialCoordinates: Omit<Coordinate, 'id'>[] = []): MinecraftMap => {
-    const coordinates: Coordinate[] = initialCoordinates.map(coord => ({
-      ...coord,
-      id: generateId(),
-    }));
+    if (mapError || coordError) {
+      toast.error('Could not load your maps.');
+      return;
+    }
+
+    setMaps(
+      (mapRows ?? []).map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description ?? '',
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
+        coordinates: (coordRows ?? [])
+          .filter(c => c.map_id === row.id)
+          .map(c => ({ id: c.id, x: c.x, y: c.y, z: c.z, label: c.label, color: c.color ?? undefined })),
+      }))
+    );
+  }, [user]);
+
+  useEffect(() => {
+    void fetchMaps();
+  }, [fetchMaps]);
+
+  const handleCreateMap = async (
+    mapData: Omit<MinecraftMap, 'id' | 'coordinates' | 'createdAt' | 'updatedAt'>,
+    initialCoordinates: Omit<Coordinate, 'id'>[] = []
+  ): Promise<MinecraftMap | null> => {
+    if (!user) return null;
+
+    const { data: mapRow, error } = await supabase
+      .from('maps')
+      .insert({ user_id: user.id, name: mapData.name, description: mapData.description })
+      .select()
+      .single();
+
+    if (error || !mapRow) {
+      toast.error('Could not create the map.');
+      return null;
+    }
+
+    let coordinates: Coordinate[] = [];
+    if (initialCoordinates.length > 0) {
+      const { data: coordRows, error: coordError } = await supabase
+        .from('coordinates')
+        .insert(initialCoordinates.map(c => ({ map_id: mapRow.id, user_id: user.id, label: c.label, x: c.x, y: c.y, z: c.z })))
+        .select();
+      if (coordError) {
+        toast.error('Map created, but coordinates could not be saved.');
+      } else {
+        coordinates = (coordRows ?? []).map(c => ({ id: c.id, x: c.x, y: c.y, z: c.z, label: c.label, color: c.color ?? undefined }));
+      }
+    }
 
     const newMap: MinecraftMap = {
-      ...mapData,
-      id: generateId(),
+      id: mapRow.id,
+      name: mapRow.name,
+      description: mapRow.description ?? '',
       coordinates,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date(mapRow.created_at),
+      updatedAt: new Date(mapRow.updated_at),
     };
 
     setMaps(prev => [...prev, newMap]);
@@ -51,81 +114,72 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return newMap;
   };
 
-  const handleUpdateMap = (mapId: string, updates: { name: string; description: string }) => {
-    const updatedMap = maps.find(m => m.id === mapId);
-    if (!updatedMap) return;
-
-    const newMap = {
-      ...updatedMap,
-      ...updates,
-      updatedAt: new Date(),
-    };
-
-    setMaps(prev => prev.map(m => m.id === mapId ? newMap : m));
-    toast.success(`Map "${newMap.name}" updated successfully!`);
+  const handleUpdateMap = async (mapId: string, updates: { name: string; description: string }) => {
+    const { error } = await supabase.from('maps').update(updates).eq('id', mapId);
+    if (error) {
+      toast.error('Could not update the map.');
+      return;
+    }
+    setMaps(prev => prev.map(m => (m.id === mapId ? { ...m, ...updates, updatedAt: new Date() } : m)));
+    toast.success(`Map "${updates.name}" updated successfully!`);
   };
 
-  const handleDeleteMap = (mapId: string) => {
+  const handleDeleteMap = async (mapId: string) => {
     const mapToDelete = maps.find(m => m.id === mapId);
+    const { error } = await supabase.from('maps').delete().eq('id', mapId);
+    if (error) {
+      toast.error('Could not delete the map.');
+      return;
+    }
     setMaps(prev => prev.filter(m => m.id !== mapId));
     toast.success(`Map "${mapToDelete?.name}" deleted successfully!`);
   };
 
-  const handleAddCoordinate = (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => {
-    const selectedMap = maps.find(m => m.id === mapId);
-    if (!selectedMap) return;
-
-    const newCoordinate: Coordinate = {
-      ...coordinateData,
-      id: generateId(),
-    };
-
-    const updatedMap = {
-      ...selectedMap,
-      coordinates: [...selectedMap.coordinates, newCoordinate],
-      updatedAt: new Date(),
-    };
-
-    setMaps(prev => prev.map(m => m.id === mapId ? updatedMap : m));
+  const handleAddCoordinate = async (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('coordinates')
+      .insert({ map_id: mapId, user_id: user.id, label: coordinateData.label, x: coordinateData.x, y: coordinateData.y, z: coordinateData.z })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error('Could not add the coordinate.');
+      return;
+    }
+    const newCoordinate: Coordinate = { id: data.id, x: data.x, y: data.y, z: data.z, label: data.label, color: data.color ?? undefined };
+    setMaps(prev => prev.map(m => (m.id === mapId ? { ...m, coordinates: [...m.coordinates, newCoordinate], updatedAt: new Date() } : m)));
     toast.success(`Coordinate "${newCoordinate.label}" added!`);
   };
 
-  const handleBulkImportCoordinates = (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => {
-    const selectedMap = maps.find(m => m.id === mapId);
-    if (!selectedMap) return;
-
-    const newCoordinates: Coordinate[] = coordinatesData.map(coord => ({
-      ...coord,
-      id: generateId(),
-    }));
-
-    const updatedMap = {
-      ...selectedMap,
-      coordinates: [...selectedMap.coordinates, ...newCoordinates],
-      updatedAt: new Date(),
-    };
-
-    setMaps(prev => prev.map(m => m.id === mapId ? updatedMap : m));
+  const handleBulkImportCoordinates = async (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => {
+    if (!user || coordinatesData.length === 0) return;
+    const { data, error } = await supabase
+      .from('coordinates')
+      .insert(coordinatesData.map(c => ({ map_id: mapId, user_id: user.id, label: c.label, x: c.x, y: c.y, z: c.z })))
+      .select();
+    if (error) {
+      toast.error('Could not import the coordinates.');
+      return;
+    }
+    const newCoordinates: Coordinate[] = (data ?? []).map(c => ({ id: c.id, x: c.x, y: c.y, z: c.z, label: c.label, color: c.color ?? undefined }));
+    setMaps(prev => prev.map(m => (m.id === mapId ? { ...m, coordinates: [...m.coordinates, ...newCoordinates], updatedAt: new Date() } : m)));
     toast.success(`Imported ${newCoordinates.length} coordinate${newCoordinates.length > 1 ? 's' : ''}`);
   };
 
-  const handleDeleteCoordinate = (mapId: string, coordinateId: string) => {
-    const selectedMap = maps.find(m => m.id === mapId);
-    if (!selectedMap) return;
-
-    const coordToDelete = selectedMap.coordinates.find(c => c.id === coordinateId);
-    const updatedMap = {
-      ...selectedMap,
-      coordinates: selectedMap.coordinates.filter(c => c.id !== coordinateId),
-      updatedAt: new Date(),
-    };
-
-    setMaps(prev => prev.map(m => m.id === mapId ? updatedMap : m));
+  const handleDeleteCoordinate = async (mapId: string, coordinateId: string) => {
+    const coordToDelete = maps.find(m => m.id === mapId)?.coordinates.find(c => c.id === coordinateId);
+    const { error } = await supabase.from('coordinates').delete().eq('id', coordinateId);
+    if (error) {
+      toast.error('Could not delete the coordinate.');
+      return;
+    }
+    setMaps(prev => prev.map(m => (m.id === mapId ? { ...m, coordinates: m.coordinates.filter(c => c.id !== coordinateId) } : m)));
     toast.success(`Coordinate "${coordToDelete?.label}" deleted!`);
   };
 
   const value: AppContextType = {
     maps,
+    loading,
     handleCreateMap,
     handleUpdateMap,
     handleDeleteMap,
