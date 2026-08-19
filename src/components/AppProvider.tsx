@@ -11,6 +11,7 @@ interface AppContextType {
   handleUpdateMap: (mapId: string, updates: { name: string; description: string }) => void;
   handleDeleteMap: (mapId: string) => void;
   handleAddCoordinate: (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => void;
+  handleUpdateCoordinate: (mapId: string, coordinateId: string, updates: Omit<Coordinate, 'id'>) => void;
   handleBulkImportCoordinates: (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => void;
   handleDeleteCoordinate: (mapId: string, coordinateId: string) => void;
 }
@@ -151,6 +152,25 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     toast.success(`Coordinate "${newCoordinate.label}" added!`);
   };
 
+  const handleUpdateCoordinate = async (mapId: string, coordinateId: string, updates: Omit<Coordinate, 'id'>) => {
+    const { error } = await supabase
+      .from('coordinates')
+      .update({ label: updates.label, x: updates.x, y: updates.y, z: updates.z })
+      .eq('id', coordinateId);
+    if (error) {
+      toast.error('Could not update the location.');
+      return;
+    }
+    setMaps(prev =>
+      prev.map(m =>
+        m.id === mapId
+          ? { ...m, coordinates: m.coordinates.map(c => (c.id === coordinateId ? { ...c, ...updates } : c)), updatedAt: new Date() }
+          : m
+      )
+    );
+    toast.success(`Location "${updates.label}" updated!`);
+  };
+
   const handleBulkImportCoordinates = async (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => {
     if (!user || coordinatesData.length === 0) return;
     const { data, error } = await supabase
@@ -184,6 +204,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     handleUpdateMap,
     handleDeleteMap,
     handleAddCoordinate,
+    handleUpdateCoordinate,
     handleBulkImportCoordinates,
     handleDeleteCoordinate,
   };
