@@ -6,20 +6,24 @@ import { MinecraftMap, Coordinate } from '@/types/map';
 import { MapCanvas } from '@/components/MapCanvas';
 import { MapEditDialog } from '@/components/MapEditDialog';
 import { CoordinateForm } from '@/components/CoordinateForm';
+import { CoordinateEditDialog } from '@/components/CoordinateEditDialog';
 import { BulkCoordinateImport } from '@/components/BulkCoordinateImport';
 import { FullScreenMap } from '@/components/FullScreenMap';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Loader2, MapPin, X } from 'lucide-react';
 
 const MapDetail = () => {
   const { mapId } = useParams<{ mapId: string }>();
   const navigate = useNavigate();
-  const { maps, loading, handleUpdateMap, handleDeleteMap, handleAddCoordinate, handleBulkImportCoordinates, handleDeleteCoordinate } = useApp();
+  const { maps, loading, handleUpdateMap, handleDeleteMap, handleAddCoordinate, handleUpdateCoordinate, handleBulkImportCoordinates, handleDeleteCoordinate } = useApp();
   const [selectedCoordinate, setSelectedCoordinate] = useState<Coordinate | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [editingMap, setEditingMap] = useState<MinecraftMap | null>(null);
+  const [placeMode, setPlaceMode] = useState(false);
+  const [draftCoordinate, setDraftCoordinate] = useState<Omit<Coordinate, 'id'> | null>(null);
+  const [editingCoordinate, setEditingCoordinate] = useState<Coordinate | null>(null);
 
   const selectedMap = maps.find(m => m.id === mapId);
 
@@ -99,9 +103,21 @@ const MapDetail = () => {
             {/* Map Canvas */}
             <Card>
               <CardHeader className="px-3 sm:px-6">
-                <CardTitle className="text-lg md:text-xl">Map View</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="text-lg md:text-xl">Map View</CardTitle>
+                  <Button
+                    variant={placeMode ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPlaceMode(v => !v)}
+                  >
+                    {placeMode ? <X className="w-4 h-4 mr-2" /> : <MapPin className="w-4 h-4 mr-2" />}
+                    {placeMode ? 'Cancel' : 'Add Location on Map'}
+                  </Button>
+                </div>
                 <CardDescription className="text-sm">
-                  Drag or swipe to pan • Pinch or use controls to zoom • Tap a point for details
+                  {placeMode
+                    ? 'Tap anywhere on the map to drop a new location, then name it.'
+                    : 'Drag or swipe to pan • Pinch or use controls to zoom • Tap a point for details'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-2 sm:px-6">
@@ -110,6 +126,11 @@ const MapDetail = () => {
                   selectedCoordinate={selectedCoordinate}
                   onCoordinateSelect={setSelectedCoordinate}
                   onFullScreen={handleFullScreen}
+                  placeMode={placeMode}
+                  onPlacePoint={(x, z) => {
+                    setDraftCoordinate({ x, y: 64, z, label: '' });
+                    setPlaceMode(false);
+                  }}
                 />
               </CardContent>
             </Card>
@@ -120,6 +141,14 @@ const MapDetail = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-lg md:text-xl">
                     Coordinate Details
+                    <span className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingCoordinate(selectedCoordinate)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="destructive"
                       size="sm"
@@ -127,6 +156,7 @@ const MapDetail = () => {
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -172,17 +202,30 @@ const MapDetail = () => {
                             ({coord.x}, {coord.y}, {coord.z})
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCoordinate(selectedMap.id, coord.id);
-                          }}
-                          className="shrink-0"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex shrink-0 items-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCoordinate(coord);
+                            }}
+                            aria-label={`Edit ${coord.label}`}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCoordinate(selectedMap.id, coord.id);
+                            }}
+                            aria-label={`Delete ${coord.label}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -202,6 +245,32 @@ const MapDetail = () => {
           onClose={handleCloseFullScreen}
         />
       )}
+
+      {/* Add / Edit Location Dialogs */}
+      <CoordinateEditDialog
+        isOpen={!!draftCoordinate}
+        onOpenChange={(open) => !open && setDraftCoordinate(null)}
+        coordinate={draftCoordinate}
+        mode="create"
+        onSave={(values) => {
+          handleAddCoordinate(selectedMap.id, values);
+          setDraftCoordinate(null);
+        }}
+      />
+
+      <CoordinateEditDialog
+        isOpen={!!editingCoordinate}
+        onOpenChange={(open) => !open && setEditingCoordinate(null)}
+        coordinate={editingCoordinate}
+        mode="edit"
+        onSave={(values) => {
+          if (editingCoordinate) {
+            handleUpdateCoordinate(selectedMap.id, editingCoordinate.id, values);
+            setSelectedCoordinate(prev => (prev && prev.id === editingCoordinate.id ? { ...prev, ...values } : prev));
+          }
+          setEditingCoordinate(null);
+        }}
+      />
 
       {/* Edit Map Dialog */}
       {editingMap && (
