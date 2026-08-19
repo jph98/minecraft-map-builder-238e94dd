@@ -154,7 +154,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const handleBulkImportCoordinates = async (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => {
     if (!user || coordinatesData.length === 0) return;
-    if (!user || coordinatesData.length === 0) return;
     const { data, error } = await supabase
       .from('coordinates')
       .insert(coordinatesData.map(c => ({ map_id: mapId, user_id: user.id, label: c.label, x: c.x, y: c.y, z: c.z })))
@@ -169,6 +168,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const handleDeleteCoordinate = async (mapId: string, coordinateId: string) => {
+    const coordToDelete = maps.find(m => m.id === mapId)?.coordinates.find(c => c.id === coordinateId);
     const coordToDelete = maps.find(m => m.id === mapId)?.coordinates.find(c => c.id === coordinateId);
     const { error } = await supabase.from('coordinates').delete().eq('id', coordinateId);
     if (error) {
