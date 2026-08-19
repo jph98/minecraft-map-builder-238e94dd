@@ -160,6 +160,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     ctx.font = `bold ${axisFont}px ui-monospace, monospace`;
     const labelStep = niceInterval((isMobile ? 64 : 90) / autoScale);
 
+    const rulerRects: Rect[] = [];
     const rulerY = Math.min(Math.max(origin.y, 16), cssHeight - 6);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -172,6 +173,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       ctx.fillRect(sx - w / 2, rulerY - 15, w, 14);
       ctx.fillStyle = '#1A1A1A';
       ctx.fillText(text, sx, rulerY - 8);
+      rulerRects.push({ x: sx - w / 2, y: rulerY - 15, w, h: 14 });
     }
 
     const rulerX = Math.min(Math.max(origin.x, 6), cssWidth - 6);
@@ -186,6 +188,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       ctx.fillRect(right - w, sy - 7, w, 14);
       ctx.fillStyle = '#1A1A1A';
       ctx.fillText(text, right - 3, sy);
+      rulerRects.push({ x: right - w, y: sy - 7, w, h: 14 });
     }
 
     // ---- Layer 4: markers (fixed screen size, never overlap-scaled) ----
@@ -221,9 +224,14 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         return aSel - bSel || a.p.y - b.p.y || a.p.x - b.p.x;
       });
 
-      const placed: Rect[] = visible.map(({ p }) => ({
-        x: p.x - markerSize, y: p.y - markerSize, w: markerSize * 2, h: markerSize * 2,
-      }));
+      const placed: Rect[] = [
+        ...rulerRects,
+        // keep labels clear of the floating control bar
+        { x: cssWidth - (isMobile ? 210 : 250), y: 0, w: isMobile ? 210 : 250, h: 52 },
+        ...visible.map(({ p }) => ({
+          x: p.x - markerSize, y: p.y - markerSize, w: markerSize * 2, h: markerSize * 2,
+        })),
+      ];
 
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
