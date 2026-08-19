@@ -11,6 +11,7 @@ interface AppContextType {
   handleUpdateMap: (mapId: string, updates: { name: string; description: string }) => void;
   handleDeleteMap: (mapId: string) => void;
   handleAddCoordinate: (mapId: string, coordinateData: Omit<Coordinate, 'id'>) => void;
+  handleUpdateCoordinate: (mapId: string, coordinateId: string, updates: Omit<Coordinate, 'id'>) => void;
   handleBulkImportCoordinates: (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => void;
   handleDeleteCoordinate: (mapId: string, coordinateId: string) => void;
 }
@@ -152,6 +153,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const handleBulkImportCoordinates = async (mapId: string, coordinatesData: Omit<Coordinate, 'id'>[]) => {
+    if (!user || coordinatesData.length === 0) return;
     if (!user || coordinatesData.length === 0) return;
     const { data, error } = await supabase
       .from('coordinates')
