@@ -62,49 +62,49 @@ const MapDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
-      <div className="container mx-auto px-4 py-4 md:py-8">
+    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-amber-50 to-orange-100">
+      <div className="container mx-auto max-w-full px-3 py-4 sm:px-4 md:py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" onClick={() => navigate('/')}>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6">
+          <Button variant="outline" size="sm" onClick={() => navigate('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Maps
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl md:text-3xl font-bold text-amber-900">{selectedMap.name}</h1>
-            <p className="text-amber-700">{selectedMap.description}</p>
+          <div className="order-last w-full min-w-0 sm:order-none sm:flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900 break-words">{selectedMap.name}</h1>
+            <p className="text-sm sm:text-base text-amber-700 break-words">{selectedMap.description}</p>
           </div>
-          <Badge variant="outline" className="text-sm">
+          <Badge variant="outline" className="text-xs sm:text-sm">
             {selectedMap.coordinates.length} coordinates
           </Badge>
-          <Button variant="outline" onClick={() => setEditingMap(selectedMap)}>
-            <Edit className="w-4 h-4 mr-2" />
-            Edit
+          <Button variant="outline" size="sm" onClick={() => setEditingMap(selectedMap)}>
+            <Edit className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Edit</span>
           </Button>
-          <Button variant="destructive" onClick={handleDeleteMapAndNavigate}>
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
+          <Button variant="destructive" size="sm" onClick={handleDeleteMapAndNavigate}>
+            <Trash2 className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Delete</span>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6 min-w-0">
           {/* Sidebar */}
-          <div className="xl:col-span-1 space-y-4">
+          <div className="xl:col-span-1 space-y-4 min-w-0">
             <CoordinateForm onAddCoordinate={(coordinateData) => handleAddCoordinate(selectedMap.id, coordinateData)} />
             <BulkCoordinateImport onImportCoordinates={(coordinatesData) => handleBulkImportCoordinates(selectedMap.id, coordinatesData)} />
           </div>
 
           {/* Main Content */}
-          <div className="xl:col-span-3 space-y-4 md:space-y-6">
+          <div className="xl:col-span-3 space-y-4 md:space-y-6 min-w-0">
             {/* Map Canvas */}
             <Card>
-              <CardHeader>
+              <CardHeader className="px-3 sm:px-6">
                 <CardTitle className="text-lg md:text-xl">Map View</CardTitle>
                 <CardDescription className="text-sm">
-                  Click and drag to pan • Use zoom controls • Click coordinates for details • Full screen available
+                  Drag or swipe to pan • Pinch or use controls to zoom • Tap a point for details
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-2 sm:px-6">
                 <MapCanvas
                   map={selectedMap}
                   selectedCoordinate={selectedCoordinate}
