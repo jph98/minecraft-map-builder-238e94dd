@@ -10,6 +10,9 @@ interface MapCanvasProps {
   onCoordinateSelect: (coordinate: Coordinate | null) => void;
   onFullScreen?: () => void;
   isFullScreen?: boolean;
+  /** When true, clicking/tapping the map picks a spot instead of selecting a marker. */
+  placeMode?: boolean;
+  onPlacePoint?: (x: number, z: number) => void;
 }
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -23,6 +26,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   onCoordinateSelect,
   onFullScreen,
   isFullScreen = false,
+  placeMode = false,
+  onPlacePoint,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scale, setScale] = useState(1);
@@ -303,11 +308,18 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     const rect = canvas.getBoundingClientRect();
     const sx = clientX - rect.left;
     const sy = clientY - rect.top;
-    const { toScreen } = getCamera(canvas.clientWidth, canvas.clientHeight);
+    const { toScreen, toWorld } = getCamera(canvas.clientWidth, canvas.clientHeight);
+
+    if (placeMode && onPlacePoint) {
+      const world = toWorld(sx, sy);
+      onPlacePoint(Math.round(world.x), Math.round(world.z));
+      return;
+    }
 
     let closest: Coordinate | null = null;
     let minDistance = Infinity;
     const radius = isMobile ? 28 : 20;
+
 
     map.coordinates.forEach(coord => {
       const p = toScreen(coord.x, coord.z);
@@ -408,7 +420,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full touch-none cursor-move"
+        className={`w-full h-full touch-none ${placeMode ? 'cursor-crosshair' : 'cursor-move'}`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -439,6 +451,12 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
           </Button>
         )}
       </div>
+
+      {placeMode && (
+        <div className="absolute top-2 left-2 rounded bg-black/75 px-2 py-1 text-[11px] font-mono text-white sm:text-xs">
+          Tap the map to place a new location
+        </div>
+      )}
 
       {showLabels && hiddenLabels > 0 && (
         <div className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-[11px] font-mono text-white">
